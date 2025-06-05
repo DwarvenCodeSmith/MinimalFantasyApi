@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Character Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .characters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .character-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 5px solid #667eea;
+        }
+
+        .character-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+        }
+
+        .character-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .character-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .detail-label {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+            margin-top: 5px;
+        }
+
+        .class-warrior { border-left-color: #ff6b6b; }
+        .class-mage { border-left-color: #4ecdc4; }
+        .class-rogue { border-left-color: #45b7d1; }
+        .class-cleric { border-left-color: #f9ca24; }
+        .class-ranger { border-left-color: #6c5ce7; }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            margin: 40px 0;
+        }
+
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .characters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .character-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗡️ Fantasy Character Generator ⚔️</h1>
+        
+        <div class="controls">
+            <button id="generateBtn" onclick="generateCharacters()">
+                Generate New Party
+            </button>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            Summoning your adventurers...
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div id="charactersContainer" class="characters-grid"></div>
+    </div>
+
+    <script>
+        async function generateCharacters() {
+            const generateBtn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const container = document.getElementById('charactersContainer');
+
+            // Show loading state
+            generateBtn.disabled = true;
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            container.innerHTML = '';
+
+            try {
+                const response = await fetch('/characters');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const characters = await response.json();
+                displayCharacters(characters);
+            } catch (err) {
+                console.error('Error fetching characters:', err);
+                error.textContent = 'Failed to generate characters. Make sure your API is running on the same port!';
+                error.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+                generateBtn.disabled = false;
+            }
+        }
+
+        function displayCharacters(characters) {
+            const container = document.getElementById('charactersContainer');
+            
+            characters.forEach(character => {
+                const card = document.createElement('div');
+                card.className = `character-card class-${character.class.toLowerCase()}`;
+                
+                card.innerHTML = `
+                    <div class="character-name">${character.name}</div>
+                    <div class="character-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Class</div>
+                            <div class="detail-value">${character.class}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Level</div>
+                            <div class="detail-value">${character.level}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Weapon</div>
+                            <div class="detail-value">${character.weapon}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Experience</div>
+                            <div class="detail-value">${character.level * 1000} XP</div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // Generate initial characters when page loads
+        window.addEventListener('load', generateCharacters);
+    </script>
+</body>
+</html>
