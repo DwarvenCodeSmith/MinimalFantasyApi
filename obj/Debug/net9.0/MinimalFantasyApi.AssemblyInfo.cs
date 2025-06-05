@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MinimalFantasyApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fbf396e00ea550d4ca6826085e400166c0af583b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5ebd59e678674510c1cf4a2e5d48514782ab8be0")]
 [assembly: System.Reflection.AssemblyProductAttribute("MinimalFantasyApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MinimalFantasyApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
