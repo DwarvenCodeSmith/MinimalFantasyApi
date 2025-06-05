@@ -26,9 +26,61 @@ var characterFaker = new Faker<Character>()
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-app.MapGet("/characters", () =>
+// 🏗️ CREATE - Generate and save a new character
+app.MapPost("/characters", async (FantasyDbContext db) =>
 {
-    return characterFaker.Generate(1);
+    var character = characterFaker.Generate();
+    db.Characters.Add(character);
+    await db.SaveChangesAsync();
+    return Results.Created($"/characters/{character.Id}", character);
+});
+
+// 📖 READ - Get all characters from database
+app.MapGet("/characters", async (FantasyDbContext db) =>
+{
+    return await db.Characters.ToListAsync();
+});
+
+// 📖 READ - Get specific character by ID
+app.MapGet("/characters/{id}", async (int id, FantasyDbContext db) =>
+{
+    var character = await db.Characters.FindAsync(id);
+    return character is not null ? Results.Ok(character) : Results.NotFound("Missing character");
+});
+
+// ✏️ UPDATE - Update an existing character
+app.MapPut("/characters/{id}", async (int id, Character updatedCharacter, FantasyDbContext db) =>
+{
+    var character = await db.Characters.FindAsync(id);
+    if (character is null) return Results.NotFound();
+
+    character.Name = updatedCharacter.Name;
+    character.Class = updatedCharacter.Class;
+    character.Level = updatedCharacter.Level;
+    character.Weapon = updatedCharacter.Weapon;
+
+    await db.SaveChangesAsync();
+    return Results.Ok(character);
+});
+
+// 🗡️ DELETE - Remove a character
+app.MapDelete("/characters/{id}", async (int id, FantasyDbContext db) =>
+{
+    var character = await db.Characters.FindAsync(id);
+    if (character is null) return Results.NotFound();
+
+    db.Characters.Remove(character);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
+// 🎲 BONUS - Generate multiple characters at once
+app.MapPost("/characters/batch/{count}", async (int count, FantasyDbContext db) =>
+{
+    var characters = characterFaker.Generate(count);
+    db.Characters.AddRange(characters);
+    await db.SaveChangesAsync();
+    return Results.Created("/characters", characters);
 });
 
 app.Run();
